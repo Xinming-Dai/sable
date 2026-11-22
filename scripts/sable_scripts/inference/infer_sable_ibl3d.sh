@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,21 +8,22 @@
 #SBATCH --mem=30G
 #SBATCH -t 0-00:15:00
 #SBATCH -J erz_infer
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/inference/infer_sable_ibl3d_multisession_%j.log
+#SBATCH -o logs/infer_sable_ibl3d_multisession_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 JOB_ID="${JOB_ID:-21047248}"
 
 STAGE=eval
-DATASET_PATH="${DATASET_PATH:-/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/$STAGE}"
+DATASET_PATH="${DATASET_PATH:-$IBL_DATA_ROOT/extracted_frames/$STAGE}"
 
 # Model dir contains config.yaml saved during training; checkpoints live under tb_logs/
-MODEL_DIR="${MODEL_DIR:-/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID}"
+MODEL_DIR="${MODEL_DIR:-$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID}"
 
 OUTPUT_DIR="${OUTPUT_DIR:-$MODEL_DIR/inference}"
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,12 +8,14 @@
 #SBATCH --mem=48G
 #SBATCH -t 0-5:59:00
 #SBATCH -J extract_cheese3d_img_tokens
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/cheese3d/step2_extract_img_tokens_%j.log
+#SBATCH -o logs/step2_extract_img_tokens_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
 # Blackwell 10.0 unsupported by gsplat; use a safe default if missing or 10.0.
 if [[ "${TORCH_CUDA_ARCH_LIST:-}" == *"10.0"* ]] || [[ -z "${TORCH_CUDA_ARCH_LIST:-}" ]]; then
@@ -24,7 +26,6 @@ fi
 
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Extracts Sable latents (frame_z/dino_z/combined_z/img_tokens) for the Cheese3D ephys session's
@@ -37,8 +38,8 @@ cd "$REPO_ROOT"
 #   sbatch --export=ALL,MODEL_DIR=...,EID=... \
 #     scripts/sable_scripts/encoding_decoding/cheese3d/step2_extract_img_tokens.sh
 EID="${EID:-20250523_B1_ephys-record_awake_000}"
-MODEL_DIR="${MODEL_DIR:-/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/cheese3d/20156493}"                        # dir with config.yaml + *best.ckpt
-EVAL_FRAMES_DIR="${EVAL_FRAMES_DIR:-/work/hdd/bfsr/xdai3/cheese3d_neural/eval_frames}"
+MODEL_DIR="${MODEL_DIR:-$CKPT_ROOT/cheese3d/20156493}"                        # dir with config.yaml + *best.ckpt
+EVAL_FRAMES_DIR="${EVAL_FRAMES_DIR:-$CHEESE3D_NEURAL_ROOT/eval_frames}"
 OUTPUT_DIR="$MODEL_DIR/latents"
 LATENT_FLAGS="${LATENT_FLAGS:---return-all-z}"   # or e.g. "--return-frame-z"
 RESUME="${RESUME:-true}"                                             # set to "false" to force recompute

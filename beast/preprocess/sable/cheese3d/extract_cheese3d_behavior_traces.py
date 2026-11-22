@@ -1,8 +1,8 @@
 """Build a beast-compatible ``behavior_z_trials.npz`` from Cheese3D Lightning Pose keypoints.
 
-Cheese3D analog of IBL's ``DYNAMIC_VARS`` continuous behavior traces (see
-``/u/xdai3/project3d/erayzer_cls/E-RayZer-private/scripts/extract_neural_data.py``): a raw
-behavior baseline to compare against SABLE-latent encoding/decoding.
+Cheese3D analog of IBL's ``DYNAMIC_VARS`` continuous behavior traces (see E-RayZer's
+``extract_neural_data.py``): a raw behavior baseline to compare against SABLE-latent
+encoding/decoding.
 
 Reads ``frame_manifest.json`` (written by ``extract_cheese3d_neural_data.py``) to find, per
 trial in every split, the exact raw-video frame already used for that trial's SABLE latent

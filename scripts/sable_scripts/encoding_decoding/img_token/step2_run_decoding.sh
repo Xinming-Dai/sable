@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,14 +8,15 @@
 #SBATCH --mem=10G
 #SBATCH -t 0-00:59:00
 #SBATCH -J decoding
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/img_token/step2_run_decoding_%j.log
+#SBATCH -o logs/step2_run_decoding_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Stage 3 neural decoding, predicts (e.g. PCA-compressed) img tokens / other latents from neural activity. 
@@ -25,9 +26,9 @@ cd "$REPO_ROOT"
 #   sbatch --export=ALL,EID=<session-id>,... \
 #     scripts/sable_scripts/encoding_decoding/img_token/step2_run_decoding.sh
 EID="${EID:-781b35fd-e1f0-4d14-b2bb-95b7263082bb}"
-NEURAL_INPUT_DIR=/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/neural_data
+NEURAL_INPUT_DIR=$IBL_DATA_ROOT/extracted_frames/neural_data
 JOB_ID="${JOB_ID:-21047248}"
-LATENT_INPUT_DIR="${LATENT_INPUT_DIR:-/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents}"   # root dir of latent data
+LATENT_INPUT_DIR="${LATENT_INPUT_DIR:-$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents}"   # root dir of latent data
 LATENT_KIND=img_tokens_compressed
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Running neural decoding for eid=$EID"

@@ -9,7 +9,8 @@ every frame name to its neural trial index and bin index.
 Example:
     python -m beast.sable_encoding_decoding.neural.retrieve_neural_data \
         --eid 781b35fd-e1f0-4d14-b2bb-95b7263082bb --split test --trials 0:10,15 \
-        --output_dir /path/to/out
+        --neural_input_dir /path/to/extracted_frames/neural_data \
+        --eval_frames_dir /path/to/extracted_frames/eval --output_dir /path/to/out
 """
 
 import argparse
@@ -26,9 +27,6 @@ from beast.sable_encoding_decoding.render.metrics import neural_aligned_npz_path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_FRAMES_ROOT = Path('/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames')
-DEFAULT_NEURAL_INPUT_DIR = DEFAULT_FRAMES_ROOT / 'neural_data'
-DEFAULT_EVAL_FRAMES_DIR = DEFAULT_FRAMES_ROOT / 'eval'
 CAMERAS = ('left', 'right')
 MAPPING_NAME = 'frame_index_mapping.json'
 
@@ -287,8 +285,8 @@ def main(argv: list[str] | None = None) -> None:
         help='neural trial indices within the split, e.g. 0:10 (end-exclusive) or 3,5,9',
     )
     parser.add_argument('--output_dir', type=Path, required=True)
-    parser.add_argument('--neural_input_dir', type=Path, default=DEFAULT_NEURAL_INPUT_DIR)
-    parser.add_argument('--eval_frames_dir', type=Path, default=DEFAULT_EVAL_FRAMES_DIR)
+    parser.add_argument('--neural_input_dir', type=Path, required=True)
+    parser.add_argument('--eval_frames_dir', type=Path, required=True)
     parser.add_argument(
         '--overwrite',
         action='store_true',

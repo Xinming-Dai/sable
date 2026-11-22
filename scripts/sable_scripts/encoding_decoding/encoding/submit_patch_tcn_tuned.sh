@@ -24,7 +24,9 @@ for arg in "$@"; do
     esac
 done
 
-SCRIPT_DIR="/u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/encoding"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"  # login-node launcher
+export REPO_ROOT  # forwarded to the submitted jobs
+SCRIPT_DIR="$REPO_ROOT/scripts/sable_scripts/encoding_decoding/encoding"
 MODELS="${MODELS:-full nogeom dino}"
 SESSIONS="${SESSIONS:-78 72 4b}"
 

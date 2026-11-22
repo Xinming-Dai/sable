@@ -35,7 +35,6 @@ import numpy as np
 
 from beast.logging import log_step
 
-_DEFAULT_RAW_VIDEO_DIR = '/work/hdd/bfsr/xdai3/IBL-2view'
 _ALL_CAMERAS = ('left', 'right')
 _SPLITS = ('train', 'val', 'test')
 _BINSIZE = 1 / 60
@@ -63,7 +62,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         '--neural-data-dir', type=str, default=None,
         help='root written by extract_sable_neural_data.py; used when --aligned-npz is unset.',
     )
-    parser.add_argument('--raw-video-dir', type=str, default=_DEFAULT_RAW_VIDEO_DIR)
+    parser.add_argument('--raw-video-dir', type=str, required=True)
     parser.add_argument('--output-dir', type=str, required=True)
     parser.add_argument(
         '--cameras', type=str, nargs='+', default=list(_ALL_CAMERAS),

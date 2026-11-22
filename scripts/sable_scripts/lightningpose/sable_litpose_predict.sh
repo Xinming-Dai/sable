@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,20 +8,23 @@
 #SBATCH --mem=20G
 #SBATCH -t 0-11:59:00
 #SBATCH -J litpose
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/lightningpose/litpose_predict_sable_%j.log
+#SBATCH -o logs/litpose_predict_sable_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate lp
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$LP_CONDA_ENV"
 
-export PATH="${PATH}:/sw/external/python/anaconda3/bin"
+# lp env has no ffmpeg binary on PATH; set EXTRA_BIN_DIR (env.sh) to a dir that provides one
+[ -n "$EXTRA_BIN_DIR" ] && export PATH="${PATH}:${EXTRA_BIN_DIR}"
 
-BEAST_REPO=/u/xdai3/project3d/SBALE_repo/beast
-ROOT=/work/hdd/bfsr/xdai3/IBL-2view
-LIGHTNING_POSE_MODEL_DIR=/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/lightning_pose/multiview_transformer_3235_0
-SCRIPT=/u/xdai3/project3d/SBALE_repo/beast/beast/preprocess/sable/ibl/run_litpose_predict_sable.py
-CONFIG=/u/xdai3/project3d/SBALE_repo/beast/configs/multiview/extraction_pipeline_sable.yaml
+BEAST_REPO=$REPO_ROOT
+ROOT=$IBL_VIDEO_ROOT
+LIGHTNING_POSE_MODEL_DIR=$CKPT_ROOT/lightning_pose/multiview_transformer_3235_0
+SCRIPT=$REPO_ROOT/beast/preprocess/sable/ibl/run_litpose_predict_sable.py
+CONFIG=$REPO_ROOT/configs/multiview/extraction_pipeline_sable.yaml
 
 SESSION_IDS=(
   9b528ad0-4599-4a55-9148-96cc1d93fb24

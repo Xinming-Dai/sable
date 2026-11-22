@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-cpu
-#SBATCH --partition=cpu
+#SBATCH -A <your_account>
+#SBATCH --partition=<your_cpu_partition>
 #SBATCH -c 1
 #SBATCH --mem 1G
 #SBATCH -t 0-08:00:00
 #SBATCH --job-name="access_cheese3d_cam"
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/utils/chmod_%j.log
+#SBATCH -o logs/chmod_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 
-TARGET_DIR="${TARGET_DIR:-/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/lightning_pose}"
+TARGET_DIR="${TARGET_DIR:?set TARGET_DIR to the directory to open up to the group}"
 
 echo "---------------------------------------"
 echo "Job name: ${SLURM_JOB_NAME:-local}"

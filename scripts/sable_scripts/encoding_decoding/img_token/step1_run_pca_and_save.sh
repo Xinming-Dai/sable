@@ -1,18 +1,19 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-cpu
+#SBATCH -A <your_account>
 #SBATCH --job-name="pca_compress"
-#SBATCH --partition=cpu
+#SBATCH --partition=<your_cpu_partition>
 #SBATCH -c 1
 #SBATCH --mem 120G
 #SBATCH -t 0-00:59:00
 #SBATCH --export=ALL
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/img_token/step1_run_pca_and_save_%j.log
+#SBATCH -o logs/step1_run_pca_and_save_%j.log
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Stage 2 runs in two sub-stages via --stage:
@@ -29,7 +30,7 @@ cd "$REPO_ROOT"
 #   sbatch --export=ALL,INPUT_DIR=...,MODEL_ROOT=... \
 #     scripts/sable_scripts/encoding_decoding/img_token/step1_run_pca_and_save.sh
 JOB_ID="${JOB_ID:-21047248}"
-MODEL_ROOT="${MODEL_ROOT:-/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents}"                    # output paths
+MODEL_ROOT="${MODEL_ROOT:-$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents}"                    # output paths
 INPUT_DIR="$MODEL_ROOT/img_tokens"                          # inference dir of img_tokens_batch*.npz shards
 STAGE="${STAGE:-all}"                                       # 1 | 2 | all
 N_FEAT_KEEP=6                                               # PCA components to keep

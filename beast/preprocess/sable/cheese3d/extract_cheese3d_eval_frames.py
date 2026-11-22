@@ -4,10 +4,10 @@ Reads the ``frame_manifest.json`` written by ``extract_cheese3d_neural_data.py``
 per-camera raw MP4 frame indices, split into train/val/test) and pulls the literal
 corresponding frames from the session's raw camera videos with a single ffmpeg ``select``-filter
 decode pass per camera — cheap relative to seeking per frame, since it only requires one
-sequential decode of each ~20-minute session video. Defaults to
-``/work/hdd/bfsr/xdai3/cheese3d/videos/`` rather than the dataset's own ``videos_ephys/``
-because, for this session, ``videos_ephys/``'s ``TR`` file is truncated (ffprobe: "moov atom not
-found") while ``videos/`` has an intact copy of all six cameras — see
+sequential decode of each ~20-minute session video. ``--raw-video-dir`` should point at the
+dataset's ``videos/`` directory rather than its own ``videos_ephys/`` because, for this
+session, ``videos_ephys/``'s ``TR`` file is truncated (ffprobe: "moov atom not found") while ``videos/`` has an intact copy of all six
+cameras — see
 ``docs/sable/neural_extraction.md``.
 
 Extracts all six Cheese3D cameras (``BC``, ``L``, ``R``, ``TC``, ``TL``, ``TR``) by default so a
@@ -44,8 +44,6 @@ from pathlib import Path
 
 from beast.logging import log_step
 
-_DEFAULT_RAW_VIDEO_DIR = '/work/hdd/bfsr/xdai3/cheese3d/videos'
-_DEFAULT_CALIBRATION_DIR = '/work/hdd/bfsr/xdai3/cheese3d_cam/cheese3d_cam'
 _ALL_CAMERAS = ('BC', 'L', 'R', 'TC', 'TL', 'TR')
 _RESIZE_WIDTH, _RESIZE_HEIGHT = 320, 256
 
@@ -63,9 +61,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description='Extract eval-layout frames for a Cheese3D ephys session.',
     )
     parser.add_argument('--frame-manifest', type=str, required=True)
-    parser.add_argument('--raw-video-dir', type=str, default=_DEFAULT_RAW_VIDEO_DIR)
+    parser.add_argument('--raw-video-dir', type=str, required=True)
     parser.add_argument(
-        '--calibration-dir', type=str, default=_DEFAULT_CALIBRATION_DIR,
+        '--calibration-dir', type=str, required=True,
         help="root containing {eid}/{camera}/img00000000.npy static calibration sidecars "
              '(reused verbatim — the same intrinsics/extrinsics apply to every frame)',
     )

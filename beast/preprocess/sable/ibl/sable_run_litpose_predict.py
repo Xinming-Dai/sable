@@ -12,18 +12,18 @@ Usage::
 
     # pass session IDs directly (no config needed)
     python beast/preprocess/sable/ibl/run_litpose_predict_sable.py \\
-      --root /work/hdd/bfsr/xdai3/IBL-2view \\
+      --root /path/to/IBL-2view \\
       --model-dir /path/to/lightning_pose_model \\
-      --litpose-repo /u/xdai3/project3d/lightning-pose \\
+      --litpose-repo /path/to/lightning-pose \\
       --session-ids <eid1> <eid2> \\
       [--skip-existing] [--dry-run] [-- --skip_viz]
 
     # use config for cameras / naming conventions
     python beast/preprocess/sable/ibl/run_litpose_predict_sable.py \\
-      --root /work/hdd/bfsr/xdai3/IBL-2view \\
+      --root /path/to/IBL-2view \\
       --model-dir /path/to/lightning_pose_model \\
       --config configs/multiview/extraction_pipeline_sable.yaml \\
-      --litpose-repo /u/xdai3/project3d/lightning-pose \\
+      --litpose-repo /path/to/lightning-pose \\
       [-- --skip_viz]
 """
 

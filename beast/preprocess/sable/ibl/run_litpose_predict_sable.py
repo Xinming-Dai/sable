@@ -9,7 +9,7 @@ Usage::
 
     conda activate lp
     python beast/preprocess/sable/ibl/run_litpose_predict_sable.py \\
-      --root /work/hdd/bfsr/xdai3/IBL-2view \\
+      --root /path/to/IBL-2view \\
       --model-dir /path/to/lightning_pose_model \\
       --config configs/multiview/extraction_pipeline_sable.yaml \\
       [--sessionids <eid1> <eid2>] \\

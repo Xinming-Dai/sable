@@ -16,19 +16,22 @@
 # Usage (run on the login node; this only calls sbatch, no compute):
 #   bash scripts/sable_scripts/encoding_decoding/img_token/submit_mean_baseline_chain.sh --dry-run
 #   bash scripts/sable_scripts/encoding_decoding/img_token/submit_mean_baseline_chain.sh
-# Env overrides: JOB_ID, EIDS (space-separated), GPU_ACCOUNT, CPU_ACCOUNT.
+# Env overrides: JOB_ID, EIDS (space-separated), GPU_ACCOUNT, CPU_ACCOUNT, CPU_PARTITION.
 
 set -euo pipefail
 
 DRY_RUN=false
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=true
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"  # login-node launcher
+export REPO_ROOT  # forwarded to the submitted jobs
 SCRIPT_DIR="$REPO_ROOT/scripts/sable_scripts/encoding_decoding/img_token"
 JOB_ID="${JOB_ID:-21047248}"
 EIDS="${EIDS:-4b00df29-3769-43be-bb40-128b1cba6d35 72cb5550-43b4-4ef0-add5-e4adfdfb5e02 781b35fd-e1f0-4d14-b2bb-95b7263082bb}"
-GPU_ACCOUNT="${GPU_ACCOUNT:-bezq-delta-gpu}"
-CPU_ACCOUNT="${CPU_ACCOUNT:-beez-delta-cpu}"
+# Slurm account per job type; leave empty to use the #SBATCH -A line in each script
+GPU_ACCOUNT="${GPU_ACCOUNT:-}"
+CPU_ACCOUNT="${CPU_ACCOUNT:-}"
+CPU_PARTITION="${CPU_PARTITION:-}"  # empty -> cluster default partition
 START_AT="${START_AT:-step1}"
 
 DRY_COUNT=0
@@ -38,7 +41,8 @@ DRY_COUNT=0
 submit() {
     local account="$1" dep="$2" export_vars="$3"
     shift 3
-    local args=(--parsable -A "$account" --export="ALL,$export_vars")
+    local args=(--parsable --export="ALL,$export_vars")
+    [ -n "$account" ] && args+=(-A "$account")
     [ -n "$dep" ] && args+=(--dependency="afterok:$dep")
     if [ "$DRY_RUN" = true ]; then
         DRY_COUNT=$((DRY_COUNT + 1))
@@ -80,8 +84,8 @@ for eid in $EIDS; do
 done
 
 submit "$CPU_ACCOUNT" "$(join_deps "${all_final_jobs[@]}")" "JOB_ID=$JOB_ID" \
-    -p cpu -c 1 --mem 4G -t 0-00:10:00 -J summarize_mean_baseline \
-    -o "$SCRIPT_DIR/summarize_mean_baseline_%j.log" \
-    --wrap "source ~/.bashrc; conda activate beast; python $SCRIPT_DIR/summarize_mean_baseline.py --job-id $JOB_ID --eids $EIDS"
+    ${CPU_PARTITION:+-p "$CPU_PARTITION"} -c 1 --mem 4G -t 0-00:10:00 -J summarize_mean_baseline \
+    -o "$REPO_ROOT/logs/summarize_mean_baseline_%j.log" \
+    --wrap "source ~/.bashrc; source $REPO_ROOT/scripts/sable_scripts/env.sh; conda activate \$CONDA_ENV; python $SCRIPT_DIR/summarize_mean_baseline.py --job-id $JOB_ID --eids $EIDS --root \$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions"
 summary=$JOB
 echo "summary=$summary (after: ${all_final_jobs[*]})"

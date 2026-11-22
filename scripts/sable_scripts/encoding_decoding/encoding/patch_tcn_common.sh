@@ -5,15 +5,15 @@
 # Provides: setup_env, resolve_session <78|72|4b> (sets EID, PCA_ROOT),
 #           resolve_model <full|nogeom|dino> (sets OUT_DIR, TUNED_DIR, LOCKED_JSON).
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
-NEURAL_INPUT_DIR=/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/neural_data
-CKPT_ROOT=/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts
+# REPO_ROOT is set by the sourcing script
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+NEURAL_INPUT_DIR=$IBL_DATA_ROOT/extracted_frames/neural_data
 
 setup_env() {
     exec 2>&1
     export PYTHONUNBUFFERED=1  # flush print output to the slurm log as it happens
     source ~/.bashrc
-    conda activate beast
+    conda activate "$CONDA_ENV"
 
     # Blackwell 10.0 unsupported by gsplat; use a safe default if missing or 10.0.
     if [[ "${TORCH_CUDA_ARCH_LIST:-}" == *"10.0"* ]] || [[ -z "${TORCH_CUDA_ARCH_LIST:-}" ]]; then
@@ -28,15 +28,15 @@ resolve_session() {
     case "$1" in
         78)
             EID="781b35fd-e1f0-4d14-b2bb-95b7263082bb"
-            PCA_ROOT=/work/nvme/bezq/jzhang107/sable_patch_pca_cv5/session_78
+            PCA_ROOT=$PCA_ROOT_BASE/session_78
             ;;
         72)
             EID="72cb5550-43b4-4ef0-add5-e4adfdfb5e02"
-            PCA_ROOT=/work/hdd/bezq/jzhang107/sable/patch_pca_cv5_sessions/session_72
+            PCA_ROOT=$PCA_ROOT_BASE/session_72
             ;;
         4b)
             EID="4b00df29-3769-43be-bb40-128b1cba6d35"
-            PCA_ROOT=/work/hdd/bezq/jzhang107/sable/patch_pca_cv5_sessions/session_4b
+            PCA_ROOT=$PCA_ROOT_BASE/session_4b
             ;;
         *)
             echo "unknown SESSION=$1 (expected 78, 72 or 4b)"

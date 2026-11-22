@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,31 +8,32 @@
 #SBATCH --mem=35G
 #SBATCH -t 0-05:59:00
 #SBATCH -J sable_ibl_pretrain
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/training/train_sable_ibl3d_pretrain_restricted_sessions_dino_mlp_%j.log
+#SBATCH -o logs/train_sable_ibl3d_pretrain_restricted_sessions_dino_mlp_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 CONFIG="$REPO_ROOT/configs/sable/sable_ibl3d_pretrain_restricted_sessions_dino_mlp.yaml"
 
 # Data paths (override by exporting before sbatch, e.g.:
 #   sbatch --export=ALL,DATASET_PATH=/path/to/frames scripts/train_sable_ibl3d_multisession.sh)
 # Session list is fixed in the config's training.session_names (not overridden here).
 STAGE=pretrain
-DATASET_ROOT="${DATASET_ROOT:-/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames_for_eyz/$STAGE}"
-DATASET_PATH="${DATASET_PATH:-/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/$STAGE}"
+DATASET_ROOT="${DATASET_ROOT:-$IBL_DATA_ROOT/extracted_frames_for_eyz/$STAGE}"
+DATASET_PATH="${DATASET_PATH:-$IBL_DATA_ROOT/extracted_frames/$STAGE}"
 VDA_CACHE_ROOT="${VDA_CACHE_ROOT:-$DATASET_ROOT/depth_map}"
 CORRESPONDENCE_CACHE_ROOT="${CORRESPONDENCE_CACHE_ROOT:-$DATASET_ROOT/litpose_correspondences/processed_correspondences}"
 
-RESUME_BASE="/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions"
-RESUME_CKPT="/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/qitaoz--E-RayZer/checkpoints/erayzer_dl3dv.pt"
+RESUME_BASE="$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions"
+RESUME_CKPT="$CKPT_ROOT/qitaoz--E-RayZer/checkpoints/erayzer_dl3dv.pt"
 RESET_TRAINING_STATE="${RESET_TRAINING_STATE:-True}"
 RESUME_CKPT_JOB_ID="${RESUME_CKPT_JOB_ID:-23610582_dino_mlp}"
 
-CHECKPOINT_BASE="${CHECKPOINT_DIR:-/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions}"
+CHECKPOINT_BASE="${CHECKPOINT_DIR:-$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions}"
 
 if [ "$RESET_TRAINING_STATE" = "False" ]; then
     CONFIG="$RESUME_BASE/$RESUME_CKPT_JOB_ID/config.yaml"

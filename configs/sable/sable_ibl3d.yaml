@@ -46,8 +46,8 @@ model:
     enabled: true
     mode: online
     cache_root: null
-    repo_root: /u/xdai3/project3d/E-RayZer-private/third_party/VDA
-    checkpoint_path: /work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/vda/checkpoints/video_depth_anything_vitb.pth
+    repo_root: /path/to/Video-Depth-Anything  # local clone of the VDA repo
+    checkpoint_path: /path/to/video_depth_anything_vitb.pth  # VDA weights matching `encoder`
     encoder: vitb  # vitl | vitb | vits
     metric: false
     debug_save: false

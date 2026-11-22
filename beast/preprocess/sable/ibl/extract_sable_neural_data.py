@@ -1,8 +1,7 @@
 """Build a beast-compatible ``<eid>_aligned.npz`` for one IBL session via ``ONE``.
 
 SABLE/IBL analog of ``extract_cheese3d_neural_data.py``, and a port of E-RayZer-private's
-``extract_neural_data.py`` (see
-``/u/xdai3/project3d/erayzer_cls/E-RayZer-private/docs/ibl_neural_behavior_extraction.md``).
+``extract_neural_data.py``.
 Pulls spikes and continuous behaviors for one IBL session from the public IBL database via
 ``ONE``, bins them into 1-second intervals synchronized to the two-view camera timestamps,
 filters units by mean firing rate, aligns spikes with behaviors, and splits trials into

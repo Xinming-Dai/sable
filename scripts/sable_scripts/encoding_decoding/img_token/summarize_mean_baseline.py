@@ -17,9 +17,6 @@ DEFAULT_EIDS = (
     '72cb5550-43b4-4ef0-add5-e4adfdfb5e02',
     '781b35fd-e1f0-4d14-b2bb-95b7263082bb',
 )
-DEFAULT_ROOT = Path(
-    '/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions',
-)
 METRICS = ('psnr', 'ssim')
 
 
@@ -143,7 +140,12 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument('--job-id', default='21047248')
     ap.add_argument('--eids', nargs='+', default=list(DEFAULT_EIDS))
     ap.add_argument('--lr', default='1e-4')
-    ap.add_argument('--root', type=Path, default=DEFAULT_ROOT)
+    ap.add_argument(
+        '--root',
+        type=Path,
+        required=True,
+        help='ibl_pretrain_restricted_sessions directory holding the job directories',
+    )
     args = ap.parse_args(argv)
 
     pooled = {m: ([], []) for m in METRICS}  # all sessions, all views: (neural, mean)

@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,12 +8,14 @@
 #SBATCH --mem=48G
 #SBATCH -t 0-00:40:00
 #SBATCH -J finetune_decoder
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/img_token/step4b_finetune_decoder_%j.log
+#SBATCH -o logs/step4b_finetune_decoder_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
 # Blackwell 10.0 unsupported by gsplat; use a safe default if missing or 10.0.
 if [[ "${TORCH_CUDA_ARCH_LIST:-}" == *"10.0"* ]] || [[ -z "${TORCH_CUDA_ARCH_LIST:-}" ]]; then
@@ -56,7 +58,6 @@ if [ ! -f "$GSPLAT_DONE_MARKER" ]; then
     fi
 fi
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Stage 4b finetunes SABLE's image-token decoder (image_token_decoder + upsampler + renderer)
@@ -68,13 +69,13 @@ cd "$REPO_ROOT"
 # EID="${EID:-72cb5550-43b4-4ef0-add5-e4adfdfb5e02}"
 EID="${EID:-781b35fd-e1f0-4d14-b2bb-95b7263082bb}"
 JOB_ID="${JOB_ID:-21047248}"
-MODEL_ROOT="/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID"                  # dir with config.yaml + *best.ckpt
+MODEL_ROOT="$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID"                  # dir with config.yaml + *best.ckpt
 LR="1e-4"
 
 SUBDIR=latents/img_tokens_compressed/$EID
 ESTIMATED_ROOT="$MODEL_ROOT/$SUBDIR/img_tokens_compressed_estimated/$EID"
 CAMERA_NPZ="$MODEL_ROOT/$SUBDIR/img_tokens_camera_parameters.npz"
-PRECACHED_VIDEO_ROOT="/work/hdd/bfsr/xdai3/IBL_data/synchronized"
+PRECACHED_VIDEO_ROOT="$IBL_DATA_ROOT"
 USE_MASK="${USE_MASK:-true}"
 SEGMENTATION_ROOT="$PRECACHED_VIDEO_ROOT/extracted_frames_for_eyz/eval"
 
@@ -90,7 +91,7 @@ FINETUNE_ARGS=(
     --z-source "$ESTIMATED_ROOT/val"
     --camera-npz "$CAMERA_NPZ"
     --out-dir "$FINETUNE_OUT_DIR"
-    --model-dir "/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID"
+    --model-dir "$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID"
     --dataset-path "$PRECACHED_VIDEO_ROOT/extracted_frames/eval"
     --vda-cache-root "$PRECACHED_VIDEO_ROOT/extracted_frames_for_eyz/eval/depth_map"
     --correspondence-cache-root "$PRECACHED_VIDEO_ROOT/extracted_frames_for_eyz/eval/litpose_correspondences/processed_correspondences"
@@ -108,7 +109,7 @@ if [ "${FORCE_FINETUNE:-false}" != true ] && [ -f "$FINETUNE_DIR/finetuned_decod
 else
     python -m beast.sable_encoding_decoding.render.decode_and_render "${FINETUNE_ARGS[@]}" || { echo "ERROR: finetuning failed" >&2; exit 1; }
     # decoding and rendering with finetuned decoder on test split
-    cp "/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/config.yaml" "$FINETUNE_DIR/config.yaml"
+    cp "$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/config.yaml" "$FINETUNE_DIR/config.yaml"
 fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Scoring test split with finetuned decoder for eid=$EID"

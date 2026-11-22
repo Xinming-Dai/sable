@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,22 +8,23 @@
 #SBATCH --mem=8G
 #SBATCH -t 0-03:59:00
 #SBATCH -J sam3_segment_eval
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/segmentation_masks/sam3_segment_eval_%j.log
+#SBATCH -o logs/sam3_segment_eval_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
 cd "$REPO_ROOT"
 export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
-conda activate beast
+conda activate "$CONDA_ENV"
 
-BEAST_REPO=/u/xdai3/project3d/SBALE_repo/beast
-CONFIG=/u/xdai3/project3d/SBALE_repo/beast/configs/multiview/extraction_pipeline_sable.yaml
-SCRIPT=/u/xdai3/project3d/SBALE_repo/beast/beast/preprocess/sable/ibl/precompute_sam3_masks_eval.py
+BEAST_REPO=$REPO_ROOT
+CONFIG=$REPO_ROOT/configs/multiview/extraction_pipeline_sable.yaml
+SCRIPT=$REPO_ROOT/beast/preprocess/sable/ibl/precompute_sam3_masks_eval.py
 
-FRAMES_DIR=/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/eval
-OUTPUT_ROOT=/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames_for_eyz/eval
+FRAMES_DIR=$IBL_DATA_ROOT/extracted_frames/eval
+OUTPUT_ROOT=$IBL_DATA_ROOT/extracted_frames_for_eyz/eval
 
 
 SESSION_IDS=(

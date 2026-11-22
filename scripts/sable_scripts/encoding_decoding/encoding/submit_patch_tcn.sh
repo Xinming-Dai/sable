@@ -12,7 +12,8 @@ set -euo pipefail
 DRY_RUN=false
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=true
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"  # login-node launcher
+export REPO_ROOT  # forwarded to the submitted jobs
 JOB_SCRIPT="$REPO_ROOT/scripts/sable_scripts/encoding_decoding/encoding/step2_run_patch_tcn.sh"
 MODELS="${MODELS:-full nogeom dino}"
 SESSIONS="${SESSIONS:-78 72 4b}"

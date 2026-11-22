@@ -1,19 +1,20 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-cpu
-#SBATCH -p cpu
+#SBATCH -A <your_account>
+#SBATCH -p <your_cpu_partition>
 #SBATCH -c 2
 #SBATCH --mem 16G
 #SBATCH -t 0-02:00:00
 #SBATCH -J extract_cheese3d_eval_frames
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/cheese3d/step1_extract_eval_frames_%j.log
+#SBATCH -o logs/step1_extract_eval_frames_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 module load ffmpeg/7.1
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Extracts the exact eval-layout frames (all six cameras by default) for the trials chosen by
@@ -22,13 +23,13 @@ cd "$REPO_ROOT"
 #   sbatch --export=ALL,EID=...,LEFT_CAMERA=...,RIGHT_CAMERA=... \
 #     scripts/sable_scripts/encoding_decoding/cheese3d/step1_extract_eval_frames.sh
 EID="${EID:-20250523_B1_ephys-record_awake_000}"
-NEURAL_OUTPUT_DIR="${NEURAL_OUTPUT_DIR:-/work/hdd/bfsr/xdai3/cheese3d_neural/neural_data}"
+NEURAL_OUTPUT_DIR="${NEURAL_OUTPUT_DIR:-$CHEESE3D_NEURAL_ROOT/neural_data}"
 FRAME_MANIFEST="${FRAME_MANIFEST:-$NEURAL_OUTPUT_DIR/$EID/frame_manifest.json}"
 # Note: videos_ephys/ has a corrupted TR file for this session (missing moov atom); videos/
 # holds an intact copy of all six cameras for this session, hence the different default here.
-RAW_VIDEO_DIR="${RAW_VIDEO_DIR:-/work/hdd/bfsr/xdai3/cheese3d/videos}"
-CALIBRATION_DIR="${CALIBRATION_DIR:-/work/hdd/bfsr/xdai3/cheese3d_cam/cheese3d_cam}"
-EVAL_FRAMES_OUTPUT_DIR="${EVAL_FRAMES_OUTPUT_DIR:-/work/hdd/bfsr/xdai3/cheese3d_neural/eval_frames}"
+RAW_VIDEO_DIR="${RAW_VIDEO_DIR:-$CHEESE3D_ROOT/videos}"
+CALIBRATION_DIR="${CALIBRATION_DIR:-$CHEESE3D_CAM_ROOT}"
+EVAL_FRAMES_OUTPUT_DIR="${EVAL_FRAMES_OUTPUT_DIR:-$CHEESE3D_NEURAL_ROOT/eval_frames}"
 CAMERAS="${CAMERAS:-BC L R TC TL TR}"
 LEFT_CAMERA="${LEFT_CAMERA:-TL}"
 RIGHT_CAMERA="${RIGHT_CAMERA:-TR}"

@@ -1,7 +1,6 @@
 """Build a beast-compatible ``<eid>_aligned.npz`` from Cheese3D ephys trigger data.
 
-Cheese3D analog of IBL's (external) ``extract_neural_data.py``
-(see ``/u/xdai3/project3d/erayzer_cls/E-RayZer-private/docs/ibl_neural_behavior_extraction.md``).
+Cheese3D analog of IBL's (external) ``extract_neural_data.py`` from E-RayZer.
 Reads the trigger-synchronized alignment produced by the Cheese3D dataset's own
 ``align_ephys.py`` (``spike/<eid>_100fps.npz`` — hardware-clock-accurate per-camera frame
 indices and per-trigger spike counts), bins spikes into fixed-length trial windows, filters
@@ -29,9 +28,6 @@ import numpy as np
 
 from beast.logging import log_step
 
-_DEFAULT_ALIGNMENT_NPZ = (
-    '/work/hdd/bfsr/xdai3/cheese3d/spike/20250523_B1_ephys-record_awake_000_100fps.npz'
-)
 _DEFAULT_EID = '20250523_B1_ephys-record_awake_000'
 _ALL_CAMERAS = ('BC', 'L', 'R', 'TC', 'TL', 'TR')
 
@@ -48,7 +44,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='Build <eid>_aligned.npz and a frame manifest from Cheese3D ephys data.',
     )
-    parser.add_argument('--alignment-npz', type=str, default=_DEFAULT_ALIGNMENT_NPZ)
+    parser.add_argument(
+        '--alignment-npz', type=str, required=True,
+        help='path to the Cheese3D alignment file, spike/<eid>_100fps.npz',
+    )
     parser.add_argument('--eid', type=str, default=_DEFAULT_EID)
     parser.add_argument('--neural-output-dir', type=str, required=True)
     parser.add_argument('--trial-len-sec', type=float, default=1.0)

@@ -1,18 +1,19 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-cpu
+#SBATCH -A <your_account>
 #SBATCH --job-name="pca_decompress"
-#SBATCH --partition=cpu
+#SBATCH --partition=<your_cpu_partition>
 #SBATCH -c 1
 #SBATCH --mem 10G
 #SBATCH -t 0-00:59:00
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/img_token/step3_unproject_%j.log
+#SBATCH -o logs/step3_unproject_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Stage 4 un-PCA and de-normalize decoded compressed img tokens back to full-dimensional img tokens. 
@@ -25,7 +26,7 @@ cd "$REPO_ROOT"
 # EID="${EID:-72cb5550-43b4-4ef0-add5-e4adfdfb5e02}"
 EID="${EID:-781b35fd-e1f0-4d14-b2bb-95b7263082bb}"
 JOB_ID="${JOB_ID:-21047248}"
-MODEL_ROOT="/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents"
+MODEL_ROOT="$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID/latents"
 LATENT_ROOT=$MODEL_ROOT/img_tokens_compressed/$EID
 DECODING_NPY=$LATENT_ROOT/decoding_results_img_tokens_compressed.npy
 PCA_NPZ=$LATENT_ROOT/img_tokens_pca_joint.npz

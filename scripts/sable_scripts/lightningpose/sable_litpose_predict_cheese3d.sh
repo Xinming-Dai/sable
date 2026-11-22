@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsx-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,22 +8,24 @@
 #SBATCH --mem=20G
 #SBATCH -t 0-24:00:00
 #SBATCH -J litpose
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/lightningpose/litpose_predict_sable_%j.log
+#SBATCH -o logs/litpose_predict_sable_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate lp
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$LP_CONDA_ENV"
 
 # lp env has no ffmpeg binary on PATH (only the pip imageio-ffmpeg package); append (not
 # prepend) the base anaconda env's bin dir so `ffmpeg` resolves without shadowing lp's python
-export PATH="${PATH}:/sw/external/python/anaconda3/bin"
+# (set EXTRA_BIN_DIR in env.sh to that dir)
+[ -n "$EXTRA_BIN_DIR" ] && export PATH="${PATH}:${EXTRA_BIN_DIR}"
 
-BEAST_REPO=/u/xdai3/project3d/SBALE_repo/beast
-LIGHTNING_POSE_REPO=/u/xdai3/project3d/lightning-pose
-ROOT=/work/hdd/bfsr/xdai3/cheese3d/videos
-LIGHTNING_POSE_MODEL_DIR=/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/lightning_pose/outputs_cheese-3d_test_450_LP3D/mvt_3d_loss_450_0
-SCRIPT=/u/xdai3/project3d/SBALE_repo/beast/beast/preprocess/sable/cheese3d/run_litpose_predict_cheese3d.py
+BEAST_REPO=$REPO_ROOT
+ROOT=$CHEESE3D_ROOT/videos
+LIGHTNING_POSE_MODEL_DIR=$CKPT_ROOT/lightning_pose/outputs_cheese-3d_test_450_LP3D/mvt_3d_loss_450_0
+SCRIPT=$REPO_ROOT/beast/preprocess/sable/cheese3d/run_litpose_predict_cheese3d.py
 
 SESSION_IDS=(
     # "20231031_B20_chew_bl_000",

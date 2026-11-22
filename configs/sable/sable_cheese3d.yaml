@@ -46,8 +46,8 @@ model:
     enabled: true
     mode: online
     cache_root: null
-    repo_root: /u/xdai3/project3d/E-RayZer-private/third_party/VDA
-    checkpoint_path: /work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/vda/checkpoints/video_depth_anything_vitb.pth
+    repo_root: /path/to/Video-Depth-Anything  # local clone of the VDA repo
+    checkpoint_path: /path/to/video_depth_anything_vitb.pth  # VDA weights matching `encoder`
     encoder: vitb  # vitl | vitb | vits
     metric: false
     debug_save: false
@@ -85,7 +85,7 @@ optimizer:
 
 training:
   dataset_name: beast.data.sable_dataset.Cheese3DDataset
-  dataset_path: /work/hdd/bfsr/xdai3/cheese3d_cam/cheese3d_cam
+  dataset_path: /path/to/cheese3d_cam  # root with per-session camera data
   session_names:
     - 20231031_B20_chew_bl_000
     - 20231031_B20_chew_bl_000
@@ -104,7 +104,7 @@ training:
   load_gt_camera_params_for_vis: true  # overlay GT camera frustums (black) in save_camera_pointcloud_scene
   use_segmentation:
     enabled: true
-    cache_root: /work/hdd/bfsr/xdai3/cheese3d_cam/segmentation_masks
+    cache_root: /path/to/segmentation_masks  # output of the SAM3 mask precompute
   mask_geom_loss: true   # apply segmentation mask to gs_reg_loss; penalise only foreground (mouse) points
   mask_l2_loss: true    # restrict L2 photometric loss to foreground (mouse) pixels only
 

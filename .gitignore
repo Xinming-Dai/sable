@@ -203,3 +203,7 @@ metric_checkpoint/
 
 # Personal Claude Code instructions
 CLAUDE.local.md
+
+# slurm job logs written by scripts/sable_scripts
+logs/*
+!logs/.gitkeep

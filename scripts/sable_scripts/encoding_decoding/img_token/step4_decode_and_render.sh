@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,12 +8,14 @@
 #SBATCH --mem=30G
 #SBATCH -t 0-00:36:00
 #SBATCH -J decode_and_render
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/img_token/step4_decode_and_render_%j.log
+#SBATCH -o logs/step4_decode_and_render_%j.log
 #SBATCH --export=ALL
 
 exec 2>&1
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
 # Blackwell 10.0 unsupported by gsplat; use a safe default if missing or 10.0.
 if [[ "${TORCH_CUDA_ARCH_LIST:-}" == *"10.0"* ]] || [[ -z "${TORCH_CUDA_ARCH_LIST:-}" ]]; then
@@ -22,7 +24,6 @@ fi
 
 [ -x /usr/bin/gcc ] && export CC=/usr/bin/gcc CXX=/usr/bin/g++
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 # Stage 4 feeds (real or decoded) img tokens through SABLE's decoder to reconstruct images, save point clouds, and/or compute PSNR/SSIM.
@@ -32,13 +33,13 @@ cd "$REPO_ROOT"
 # EID="${EID:-72cb5550-43b4-4ef0-add5-e4adfdfb5e02}"
 EID="${EID:-781b35fd-e1f0-4d14-b2bb-95b7263082bb}"
 JOB_ID="${JOB_ID:-21047248}"
-CKPT_ROOT=/work/nvme/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID                   # dir with config.yaml + *best.ckpt
-LATENT_ROOT=/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID                  # dir with extracted latents
+CKPT_ROOT=$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID                   # dir with config.yaml + *best.ckpt
+LATENT_ROOT=$CKPT_ROOT/beast_sable/ibl_pretrain_restricted_sessions/$JOB_ID                  # dir with extracted latents
 
 SUBDIR=latents/img_tokens_compressed/$EID
 Z_SOURCE="$LATENT_ROOT/$SUBDIR/img_tokens_compressed_estimated/$EID/test"     # single .npz or a directory of img_tokens*.npz
 OUT_DIR="$LATENT_ROOT/$SUBDIR/img_tokens_compressed_estimated/$EID/decode_saved_latents"
-PRECACHED_VIDEO_ROOT="/work/hdd/bfsr/xdai3/IBL_data/synchronized"
+PRECACHED_VIDEO_ROOT="$IBL_DATA_ROOT"
 USE_MASK=true
 SEGMENTATION_ROOT="$PRECACHED_VIDEO_ROOT/extracted_frames_for_eyz/eval"
 

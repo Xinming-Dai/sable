@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,7 +8,7 @@
 #SBATCH --mem=24G
 #SBATCH -t 0-04:00:00
 #SBATCH -J patch_tcn_tune
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/encoding/step2_tune_patch_tcn_%j.log
+#SBATCH -o logs/step2_tune_patch_tcn_%j.log
 #SBATCH --export=ALL
 
 # Tune the patch TCN (lr, weight decay, dropout) for one model on the development session.
@@ -20,7 +20,8 @@
 # Env overrides: FOLD (default 0), NUM_SAMPLES (default 60).
 # Use submit_patch_tcn_tuned.sh to submit the tune and eval jobs for every model.
 
-source /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/encoding/patch_tcn_common.sh
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/encoding_decoding/encoding/patch_tcn_common.sh"
 setup_env
 
 MODEL="${1:?usage: step2_tune_patch_tcn.sh <full|nogeom|dino>}"

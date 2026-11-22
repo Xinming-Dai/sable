@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A bfsr-delta-gpu
-#SBATCH -p gpuA40x4,gpuA100x4,gpuA100x8
+#SBATCH -A <your_account>
+#SBATCH -p <your_gpu_partition>
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -8,7 +8,7 @@
 #SBATCH --mem=15G
 #SBATCH -t 0-01:29:00
 #SBATCH -J patch_tcn
-#SBATCH -o /u/xdai3/project3d/SBALE_repo/beast/scripts/sable_scripts/encoding_decoding/encoding/step2_run_patch_tcn_%j.log
+#SBATCH -o logs/step2_run_patch_tcn_%j.log
 #SBATCH --export=ALL
 
 # Neural encoding with a TCN on PCA-compressed patch embeddings (one model, one session).
@@ -21,7 +21,9 @@
 exec 2>&1
 export PYTHONUNBUFFERED=1  # flush print output to the slurm log as it happens
 source ~/.bashrc
-conda activate beast
+REPO_ROOT="${REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"  # submit from the repo root
+source "$REPO_ROOT/scripts/sable_scripts/env.sh"
+conda activate "$CONDA_ENV"
 
 # Blackwell 10.0 unsupported by gsplat; use a safe default if missing or 10.0.
 if [[ "${TORCH_CUDA_ARCH_LIST:-}" == *"10.0"* ]] || [[ -z "${TORCH_CUDA_ARCH_LIST:-}" ]]; then
@@ -30,7 +32,6 @@ fi
 
 [ -x /usr/bin/gcc ] && export CC=/usr/bin/gcc CXX=/usr/bin/g++
 
-REPO_ROOT="/u/xdai3/project3d/SBALE_repo/beast"
 cd "$REPO_ROOT"
 
 MODEL="${1:?usage: step2_run_patch_tcn.sh <full|nogeom|dino> <78|72|4b>}"
@@ -39,21 +40,20 @@ FOLD="${FOLD:-0}"
 NUM_PCS="${NUM_PCS:-6}"
 NUM_SAMPLES="${NUM_SAMPLES:-30}"
 
-NEURAL_INPUT_DIR=/work/hdd/bfsr/xdai3/IBL_data/synchronized/extracted_frames/neural_data
-CKPT_ROOT=/work/hdd/bfsr/xdai3/project3d/twoview3d_ckpts
+NEURAL_INPUT_DIR=$IBL_DATA_ROOT/extracted_frames/neural_data
 
 case "$SESSION" in
     78)
         EID="781b35fd-e1f0-4d14-b2bb-95b7263082bb"
-        PCA_ROOT=/work/nvme/bezq/jzhang107/sable_patch_pca_cv5/session_78
+        PCA_ROOT=$PCA_ROOT_BASE/session_78
         ;;
     72)
         EID="72cb5550-43b4-4ef0-add5-e4adfdfb5e02"
-        PCA_ROOT=/work/hdd/bezq/jzhang107/sable/patch_pca_cv5_sessions/session_72
+        PCA_ROOT=$PCA_ROOT_BASE/session_72
         ;;
     4b)
         EID="4b00df29-3769-43be-bb40-128b1cba6d35"
-        PCA_ROOT=/work/hdd/bezq/jzhang107/sable/patch_pca_cv5_sessions/session_4b
+        PCA_ROOT=$PCA_ROOT_BASE/session_4b
         ;;
     *)
         echo "unknown SESSION=$SESSION (expected 78, 72 or 4b)"
