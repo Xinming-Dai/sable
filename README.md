@@ -19,8 +19,8 @@ SABLE requires Python 3.10--3.12, a CUDA-capable GPU for training, and `ffmpeg` 
 preprocessing.
 
 ```bash
-conda create --yes --name beast python=3.11
-conda activate beast
+conda create --yes --name sable python=3.11
+conda activate sable
 pip install lightning poetry-core
 pip install -e . --no-build-isolation
 ```
@@ -48,6 +48,10 @@ Run `beast --help` to confirm the installation.
 Dataset-specific instructions are available for [IBL data preparation](docs/sable/extract_data_for_sable.md),
 [Cheese3D training](docs/sable/cheese3d_dataset.md), and
 [neural encoding and decoding](docs/sable/neural_encoding_decoding.md).
+
+## Acknowledgements
+
+This repository is built upon the [BEAST repository](https://github.com/paninski-lab/beast/tree/main).
 
 ## Citation
 
